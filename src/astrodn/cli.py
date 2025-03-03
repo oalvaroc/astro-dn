@@ -8,7 +8,8 @@ from torchvision.transforms import v2
 
 from astrodn.dataset import HSTDataset
 from astrodn.model import Baseline
-from astrodn.plot import plot_image
+import astrodn.plot as plot
+from astrodn.train import train
 
 MODELS = {
     "baseline": Baseline,
@@ -65,9 +66,8 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    transform = v2.Compose([
-        v2.ToImage()
-    ])
+    transform = v2.Compose([v2.ToImage(), v2.GaussianNoise()])
+    target_transform = v2.Compose([v2.ToImage(), v2.CenterCrop(248)])
 
     ds = HSTDataset(
         "dataset",
@@ -75,15 +75,23 @@ def main():
         train=True,
         download=True,
         transform=transform,
+        target_transform=target_transform,
     )
     model = (MODELS.get(args.model))(1)
 
-    inp, _ = ds[0]
-    inp = inp[None, :, :, :]
-    out = model(inp)
+    losses = train(
+        epochs=args.epochs,
+        model=model,
+        dataset=ds,
+        batch_size=args.batch_size,
+        optim=torch.optim.Adam(model.parameters()),
+    )
 
-    print(f"input: {inp.shape}  output: {out.shape}")
-    
+    plot.plot_loss(losses, filename="losses.png")
+
     with torch.no_grad():
-        plot_image(inp[0, 0, :, :].cpu(), filename="input.png")
-        plot_image(out[0, 0, :, :].cpu(), filename="output.png")
+        inp, _ = ds[0]
+        inp = inp[None, :, :, :]
+        pred = model(inp)
+        plot.plot_image(inp[0, 0, :, :].cpu(), filename="input.png")
+        plot.plot_image(pred[0, 0, :, :].cpu(), filename="output.png")

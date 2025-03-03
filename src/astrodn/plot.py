@@ -28,3 +28,14 @@ def plot_image(image: np.ndarray, norm=False, filename=None):
     plt.tight_layout()
     if filename:
         plt.savefig(filename, dpi=300)
+
+
+def plot_loss(loss: list, filename=None):
+    sns.lineplot(loss, markers="o", linestyle="-")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Loss curve")
+    plt.tight_layout()
+
+    if filename:
+        plt.savefig(filename, dpi=300)

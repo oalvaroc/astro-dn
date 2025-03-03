@@ -1,16 +1,16 @@
 """PyTorch Dataset for Hubble Space Telescope images."""
 
+import glob
 import os
 from urllib import request
-import glob
 
 import numpy as np
 from astropy.io import fits
-from torch.utils.data import Dataset
+from torchvision.datasets import VisionDataset
 from tqdm import tqdm
 
 
-class HSTDataset(Dataset):
+class HSTDataset(VisionDataset):
     """Dataset for Hubble Space Telescope images."""
 
     URL_TEMPLATE = (
@@ -21,9 +21,11 @@ class HSTDataset(Dataset):
         self,
         root: str,
         patchsize: int,
+        *args,
         train=True,
         download=False,
-        transform=None,
+        transforms=None,
+        **kwargs,
     ):
         """Instantiates a Hubble Space Telescope (HST) dataset.
 
@@ -43,19 +45,18 @@ class HSTDataset(Dataset):
             HSTDataset
                 A pytorch dataset
         """
-        self._root = root
+        super().__init__(root, transforms, *args, **kwargs)
         self._patchsize = patchsize
-        self._transform = transform
 
         self._ds = self._read_dataset(train)
         if not self._dataset_exists(train) and download:
             self._download(train)
 
     def _dataset_exists(self, train: bool):
-        if not os.path.exists(self._root):
+        if not os.path.exists(self.root):
             return False
         
-        basedir = os.path.join(self._root, "train" if train else "test")
+        basedir = os.path.join(self.root, "train" if train else "test")
         files = glob.glob(os.path.join(basedir, "*.fits"))
 
         return len(self._ds) <= len(files)
@@ -91,7 +92,7 @@ class HSTDataset(Dataset):
 
                 url = self.URL_TEMPLATE.format(file=entry)
                 path = os.path.join(
-                    self._root,
+                    self.root,
                     "train" if train else "test",
                     f"{entry}_drz.fits",
                 )
@@ -105,7 +106,7 @@ class HSTDataset(Dataset):
         Args:
             train: Download train files.
         """
-        dest = os.path.join(self._root, "train" if train else "test")
+        dest = os.path.join(self.root, "train" if train else "test")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
@@ -148,8 +149,8 @@ class HSTDataset(Dataset):
         data = HSTDataset.loadfits(path)
         patch = self._random_patch(data)
 
-        if self._transform:
-            return self._transform(patch, patch)
+        if self.transforms:
+            return self.transforms(patch, patch)
         return patch, patch
 
     def __len__(self):
