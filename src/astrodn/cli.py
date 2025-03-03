@@ -2,7 +2,17 @@
 
 import argparse
 
+import numpy as np
+import torch
+from torchvision.transforms import v2
+
 from astrodn.dataset import HSTDataset
+from astrodn.model import Baseline
+from astrodn.plot import plot_image
+
+MODELS = {
+    "baseline": Baseline,
+}
 
 
 def create_parser():
@@ -24,12 +34,12 @@ def create_parser():
     # train command
     train_parser = subparsers.add_parser("train", help="Train a CNN model")
     train_parser.add_argument(
-        "model", type=str, choices=["baseline"], help="Model name"
+        "model", type=str, choices=MODELS.keys(), help="Model name"
     )
     train_parser.add_argument(
         "--patch-size",
         type=int,
-        default=32,
+        default=256,
         help="Size of image patches to feed the model",
     )
     train_parser.add_argument(
@@ -54,10 +64,26 @@ def main():
     """CLI entry point."""
     parser = create_parser()
     args = parser.parse_args()
-    print(args)
+
+    transform = v2.Compose([
+        v2.ToImage()
+    ])
 
     ds = HSTDataset(
-        "dataset", patchsize=args.patch_size, train=True, download=True
+        "dataset",
+        patchsize=args.patch_size,
+        train=True,
+        download=True,
+        transform=transform,
     )
-    print(ds)
+    model = (MODELS.get(args.model))(1)
 
+    inp, _ = ds[0]
+    inp = inp[None, :, :, :]
+    out = model(inp)
+
+    print(f"input: {inp.shape}  output: {out.shape}")
+    
+    with torch.no_grad():
+        plot_image(inp[0, 0, :, :].cpu(), filename="input.png")
+        plot_image(out[0, 0, :, :].cpu(), filename="output.png")

@@ -2,6 +2,7 @@
 
 import os
 from urllib import request
+import glob
 
 import numpy as np
 from astropy.io import fits
@@ -47,8 +48,18 @@ class HSTDataset(Dataset):
         self._transform = transform
 
         self._ds = self._read_dataset(train)
-        if download:
+        if not self._dataset_exists(train) and download:
             self._download(train)
+
+    def _dataset_exists(self, train: bool):
+        if not os.path.exists(self._root):
+            return False
+        
+        basedir = os.path.join(self._root, "train" if train else "test")
+        files = glob.glob(os.path.join(basedir, "*.fits"))
+
+        return len(self._ds) <= len(files)
+
 
     def _read_dataset(self, train: bool) -> list[tuple[str, str]]:
         """Read dataset entries.
@@ -150,6 +161,6 @@ class HSTDataset(Dataset):
         return len(self._ds)
 
     @classmethod
-    def loadfits(file):
+    def loadfits(cls, file):
         """Load FITS image file."""
         return fits.getdata(file).astype(np.float32)
