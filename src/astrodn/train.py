@@ -1,7 +1,10 @@
+import torch
 import torch.nn as nn
 import torch.utils.data as data
 from tqdm import tqdm
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.set_default_device(device)
 
 def train(
     epochs: int,
