@@ -8,33 +8,37 @@ import torch.nn.functional as F
 class DoubleConv2D(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
-        
+
         self.conv = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, padding='valid'),
+            nn.Conv2d(in_ch, out_ch, kernel_size=3, padding="same"),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, kernel_size=3, padding='valid'),
-            nn.ReLU(inplace=True)
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, padding="same"),
+            nn.ReLU(inplace=True),
         )
 
     def forward(self, x):
         return self.conv(x)
-    
+
 
 class Up(nn.Module):
     """Upscaling using transposed convolution"""
 
     def __init__(self, in_ch):
         super().__init__()
-        self.up = nn.ConvTranspose2d(in_ch, in_ch // 2, kernel_size=2, stride=2)
-        
+        self.up = nn.ConvTranspose2d(
+            in_ch, in_ch // 2, kernel_size=2, stride=2
+        )
+
     def forward(self, x1, x2):
         x1 = self.up(x1)
 
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
 
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                        diffY // 2, diffY - diffY // 2])
+        x1 = F.pad(
+            x1,
+            [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2],
+        )
 
         x = torch.cat([x2, x1], dim=1)
         return x
@@ -55,7 +59,7 @@ class UpLayer(nn.Module):
         super().__init__()
         self.up = Up(in_ch)
         self.conv = DoubleConv2D(in_ch, out_ch)
-    
+
     def forward(self, x1, x2):
         return self.conv(self.up(x1, x2))
 
@@ -67,14 +71,14 @@ class Baseline(nn.Module):
         self.conv1 = DoubleConv2D(in_ch, 64)
         self.down1 = DownLayer(64, 128)
         self.down2 = DownLayer(128, 256)
-        self.down3 = DownLayer(256, 512) 
+        self.down3 = DownLayer(256, 512)
 
         self.up1 = UpLayer(512, 256)
         self.up2 = UpLayer(256, 128)
         self.up3 = UpLayer(128, 64)
 
         self.outconv = nn.Conv2d(64, 1, kernel_size=1)
-    
+
     def forward(self, x):
         x1 = self.conv1(x)
         x2 = self.down1(x1)

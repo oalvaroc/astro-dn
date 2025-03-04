@@ -6,11 +6,11 @@ from astropy.visualization import ImageNormalize, LinearStretch, ZScaleInterval
 sns.set_theme()
 
 
-def plot_image(image: np.ndarray, norm=False, filename=None):
+def plot_image(image: np.ndarray, norm=True, filename=None, dpi=96):
     """Plot FITS image in numpy array."""
     if image.ndim not in [2, 3]:
         raise ValueError(
-            f"Image array must be 2D (grayscale) or 3D (RGB) but has {image.dim} dimensions"
+            f"Image array must be 2D (grayscale) or 3D (RGB) but has {image.dim} dimensions"  # noqa: E501
         )
 
     plt.figure(figsize=(8, 6))
@@ -21,13 +21,13 @@ def plot_image(image: np.ndarray, norm=False, filename=None):
         plt.imshow(image, cmap="gray", norm=norm_filter)
     else:
         plt.imshow(image, cmap="gray")
-    
+
     plt.colorbar()
     plt.grid(visible=False)
 
     plt.tight_layout()
     if filename:
-        plt.savefig(filename, dpi=300)
+        plt.savefig(filename, dpi=dpi)
 
 
 def plot_loss(loss: list, filename=None):

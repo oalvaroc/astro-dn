@@ -5,9 +5,10 @@ import os
 from urllib import request
 
 import numpy as np
-from astropy.io import fits
 from torchvision.datasets import VisionDataset
 from tqdm import tqdm
+
+from astrodn.utils import loadfits
 
 
 class HSTDataset(VisionDataset):
@@ -51,6 +52,11 @@ class HSTDataset(VisionDataset):
         self._ds = self._read_dataset(train)
         if not self._dataset_exists(train) and download:
             self._download(train)
+
+    @property
+    def files(self):
+        """File paths for each dataset entry."""
+        return [path for path, _ in self._ds]
 
     def _dataset_exists(self, train: bool):
         if not os.path.exists(self.root):
@@ -146,7 +152,7 @@ class HSTDataset(VisionDataset):
         """
         path, _ = self._ds[index]
 
-        data = HSTDataset.loadfits(path)
+        data = loadfits(path)
         patch = self._random_patch(data)
 
         if self.transforms:
@@ -160,8 +166,3 @@ class HSTDataset(VisionDataset):
             Dataset length.
         """
         return len(self._ds)
-
-    @classmethod
-    def loadfits(cls, file):
-        """Load FITS image file."""
-        return fits.getdata(file).astype(np.float32)

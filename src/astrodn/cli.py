@@ -2,13 +2,13 @@
 
 import argparse
 
-import numpy as np
 import torch
 from torchvision.transforms import v2
 
+import astrodn.plot as plot
+import astrodn.utils as utils
 from astrodn.dataset import HSTDataset
 from astrodn.model import Baseline
-import astrodn.plot as plot
 from astrodn.train import train
 
 MODELS = {
@@ -88,10 +88,28 @@ def main():
     )
 
     plot.plot_loss(losses, filename="losses.png")
+    model.eval()
 
+    data = torch.randn(1, 1, 256, 256)
     with torch.no_grad():
-        inp, _ = ds[0]
-        inp = inp[None, :, :, :]
-        pred = model(inp)
-        plot.plot_image(inp[0, 0, :, :].cpu(), filename="input.png")
-        plot.plot_image(pred[0, 0, :, :].cpu(), filename="output.png")
+        pred = model(data)
+        plot.plot_image(
+            pred[0, 0, :, :].detach().numpy(), filename="patch.png"
+        )
+
+    data = torch.randn(1, 1, 1024, 1024)
+    out = utils.process_image_with_model(
+        model,
+        data,
+        args.patch_size,
+        output_patch_size=248,
+        stride=64,
+        batch_size=args.batch_size,
+    )
+
+    plot.plot_image(
+        data[0, 0, :, :].cpu().detach().numpy(), filename="input.png"
+    )
+    plot.plot_image(
+        out[0, 0, :, :].cpu().detach().numpy(), filename="output.png"
+    )
