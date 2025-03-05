@@ -17,11 +17,11 @@ def train(
     dl = data.DataLoader(dataset, batch_size=batch_size)
     losses = []
 
-    for epoch in range(epochs):
-        print(f"> EPOCH {epoch}")
+    for epoch in tqdm(range(epochs), unit="epoch"):
+        #print(f"> EPOCH {epoch}")
         epoch_loss = 0
 
-        for _, batch in tqdm(enumerate(dl), total=len(dl)):
+        for _, batch in tqdm(enumerate(dl), total=len(dl), leave=False):
             optim.zero_grad()
 
             x, y = batch

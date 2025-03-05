@@ -1,9 +1,9 @@
 hst_12174_08_wfc3_uvis_f665n
-#hst_13361_04_wfc3_uvis_f673n
-#hst_12174_07_wfc3_uvis_f547m
-# hst_12174_01_wfc3_uvis_f373n
-# hst_12174_04_wfc3_uvis_f502n
-# hst_12174_03_wfc3_uvis_f658n
+hst_13361_04_wfc3_uvis_f673n
+hst_12174_07_wfc3_uvis_f547m
+hst_12174_01_wfc3_uvis_f373n
+hst_12174_04_wfc3_uvis_f502n
+hst_12174_03_wfc3_uvis_f658n
 # hst_13361_04_wfc3_uvis_f547m
 # hst_12174_06_wfc3_uvis_f390m
 # hst_13361_04_wfc3_uvis_f502n

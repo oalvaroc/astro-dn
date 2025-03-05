@@ -67,7 +67,7 @@ def main():
     args = parser.parse_args()
 
     transform = v2.Compose([v2.ToImage(), v2.GaussianNoise()])
-    target_transform = v2.Compose([v2.ToImage(), v2.CenterCrop(248)])
+    target_transform = v2.Compose([v2.ToImage()])#, v2.CenterCrop(248)])
 
     ds = HSTDataset(
         "dataset",
@@ -94,22 +94,23 @@ def main():
     with torch.no_grad():
         pred = model(data)
         plot.plot_image(
-            pred[0, 0, :, :].detach().numpy(), filename="patch.png"
+            pred[0, 0, :, :].cpu().detach().numpy(), norm=True, filename="patch.png"
         )
 
-    data = torch.randn(1, 1, 1024, 1024)
+    data = utils.loadfits(ds.files[0])
+    data = torch.tensor(data[None, None, :, :], dtype=torch.float32)
     out = utils.process_image_with_model(
         model,
         data,
         args.patch_size,
-        output_patch_size=248,
+        output_patch_size=256,
         stride=64,
         batch_size=args.batch_size,
     )
 
     plot.plot_image(
-        data[0, 0, :, :].cpu().detach().numpy(), filename="input.png"
+        data[0, 0, :, :].cpu().detach().numpy(), norm=True, filename="input.png"
     )
     plot.plot_image(
-        out[0, 0, :, :].cpu().detach().numpy(), filename="output.png"
+        out[0, 0, :, :].cpu().detach().numpy(), norm=True, filename="output.png"
     )
