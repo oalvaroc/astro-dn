@@ -1,8 +1,10 @@
-# Astro-DN
+# AstroDn
 
-Astronomical image denoising model.
+AstroDn is a U-Net-based deep learning model for denoising astronomical images.
 
 ## Get started
+
+Follow the steps below to set up a Python environment and install AstroDn:
 
 1. Clone the repo:
    ```shell

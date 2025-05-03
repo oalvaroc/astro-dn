@@ -11,7 +11,10 @@ dependencies = [
     "numpy>=2.0",
     "ruff>=0.5",
     "matplotlib>=3.10",
+    "pandas>=2.2",
     "seaborn>=0.13",
+    "scikit-image>=0.25",
+    "scipy>=1.15",
 ]
 
 [build-system]
